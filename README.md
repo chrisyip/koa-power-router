@@ -128,7 +128,7 @@ With this feature, you can render error page without redirecting to an actual er
 An exmaple of how to define a controller:
 
 ```js
-ar user = new Controller({
+var user = new Controller({
   beforeAction: function () {
     if (!this.cookies.get('token')) {
       return true
