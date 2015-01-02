@@ -20,12 +20,28 @@ var users = [
   }
 ]
 
-user.addAction('index', function () {
+function getUserByName (name) {
+  return new Promise(function (resolve, reject) {
+    var user = _.find(users, function (user) {
+      return user.name.toLowerCase() === name.toLowerCase()
+    })
+
+    user ? resolve(user) : reject()
+  })
+}
+
+function checkRole (name) {
+  return Promise.resolve(name && _.some(users, function (user) {
+    return user.name.toLowerCase() === name.toLowerCase() && user.isAdmin
+  })).then(function (res) {
+    return res
+  })
+}
+
+user.addAction('index', function* () {
   var name = this.params.name || ''
 
-  var user = _.find(users, function (user) {
-    return user.name.toLowerCase() === name.toLowerCase()
-  })
+  var user = yield getUserByName(name)
 
   if (user) {
     this.body = user.name + '\'s email is ' + user.email
@@ -33,12 +49,10 @@ user.addAction('index', function () {
 })
 
 user.beforeAction = [
-  function () {
+  function* () {
     var name = this.params.name
 
-    if (name && _.some(users, function (user) {
-      return user.name.toLowerCase() === name.toLowerCase() && user.isAdmin
-    })) {
+    if (yield checkRole(name)) {
       this.status = 401
       return true
     }

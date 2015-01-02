@@ -18,8 +18,17 @@ var Controller = require('../controller')
 
 app.use(router())
 
+function* getHomeContent () {
+  var body = yield getBodyContent()
+  return body
+}
+
+function* getBodyContent () {
+  return yield '<p>This\'s homepage.<p>Try <a href="/user/john">/user/john</a> or post request to /post.'
+}
+
 router.all('/', new Controller(function* (next) {
-  this.body = 'Hello world.' + '<p>Try <a href="/user/john">/user/john</a> or request /post with post method'
+  this.body = yield getHomeContent()
   this.type = 'html'
   yield next
 }))

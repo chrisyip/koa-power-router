@@ -53,7 +53,15 @@ describe('router', function () {
 
   it('should response 500 with global error handler', function (done) {
     request.get(getURL('/global-error-handler'), function (error, response, body) {
-      assert.equal(body, 'Oops')
+      assert.equal(body.indexOf('Internal Server Error') > -1, true)
+      assert.equal(response.statusCode, 500)
+      done()
+    })
+  })
+
+  it('should pass error object to error handler', function (done) {
+    request.get(getURL('/global-error-handler'), function (error, response, body) {
+      assert.equal(body.indexOf('Error Stack:') > -1, true)
       assert.equal(response.statusCode, 500)
       done()
     })
@@ -95,6 +103,30 @@ describe('controller', function () {
     request.get(getURL('/controller/generator'), function (error, response, body) {
       assert.equal(body, 'done')
       assert.equal(response.statusCode, 200)
+      done()
+    })
+  })
+
+  it('should support yielding nested generators', function (done) {
+    request.get(getURL('/nested-generators'), function (error, response, body) {
+      assert.equal(response.statusCode, 200)
+      assert.equal(body, 'Nested Generators')
+      done()
+    })
+  })
+
+  it('should support yielding nested promises', function (done) {
+    request.get(getURL('/nested-promises'), function (error, response, body) {
+      assert.equal(response.statusCode, 200)
+      assert.equal(body, 'Nested Promises')
+      done()
+    })
+  })
+
+  it('should support yielding primitive data types', function (done) {
+    request.get(getURL('/primitive'), function (error, response, body) {
+      assert.equal(response.statusCode, 200)
+      assert.equal(body, 'Hello World')
       done()
     })
   })

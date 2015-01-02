@@ -6,7 +6,7 @@
 
 Features:
 
-- `onSTATUS` handler (global or specific controller)
+- `onSTATUS` handler (globally or per controller)
 - `beforeAction`: a function list that runs before router action, if any of them return values except `undefined` or `null` will skip action, and go to `onSTATUS` handler
 
 # How to use
@@ -35,11 +35,13 @@ router.on('404', function* () {
   yield this.render('404')
 })
 
+// Functions and Generators will auto-convert to Controller
 router.get('/', function* (next) {
   yield this.render('homepage')
   yield next
 })
 
+// Define a Controller with beforeAction
 var user = new Controller({
   beforeAction: function () {
     // if not login and token is empty
@@ -65,6 +67,10 @@ var user = new Controller({
 
 router.set('/login', ['get', 'post'], user.login)
 router.get('/dashboard', user.dashboard)
+
+router.on('404', function* () {
+  yield this.render('404')
+})
 ```
 
 # Router
@@ -116,7 +122,7 @@ router.get('/demo', function () {})
 Register a handler for specified status.
 
 ```js
-router.on('500', function* () {
+router.on('500', function* (next, error) {
   yield this.render('500')
 })
 ```
@@ -186,6 +192,71 @@ router.get('/dashboard', user.dashboard)
 ```
 
 Any request of `/dashboard` without `token` will go to `on401` handler and render `user/not-authorized` page instead `dashboard` page.
+
+# Yieldables
+
+Koa is using [co](https://www.npmjs.com/packages/co), and co's changed the `yield`'s behaviors.
+
+For example:
+
+```js
+// native yield
+function* func (input) {
+  var result = yield Math.floor(input) + 1
+  return result
+}
+
+func('12').next().value // 13
+
+// co
+function* func (input) {
+  var result = yield Math.floor(input) + 1
+  return result
+}
+
+co.wrap(func)() // TypeError: You may only yield a function, promise, generator, array, or object
+```
+
+Because of this change, co extended Koa with some great features:
+
+```js
+app.use(function* () {
+  var results = yield [Promise.resolve('123'), new Promise(function (res) { res('foo' + 'bar') })]
+  // Co will loop through array, and try to resolve it
+  console.log(results) // ['123', 'foobar']
+})
+```
+
+But personally, I don't like to limit yieldables objects. So Power Router will only try to resolve promises and generators:
+
+```js
+function getUser (name) {
+  return new Promise(function (res) {
+    request.get(API_TO_GET_USER, { username: name }, function (error, data) {
+      res(data)
+    })
+  })
+}
+
+router.get('/', function* () {
+  var user = yield getUser(this.query.name) // user will be the data object
+  var genders = yield [Promise.resolve('male'), Promise.resolve('female')]
+  console.log(genders) // [ Promise, Promise ]  
+})
+```
+
+If you want something like resolving array, just use co directly:
+
+```js
+var co = require('co')
+
+router.get('/', function* () {
+  var genders = yield co(function* () {
+    return yield [Promise.resolve('male'), Promise.resolve('female')]
+  })
+  console.log(genders) // [ 'male', 'female' ]  
+})
+```
 
 # Contributors
 

@@ -14,6 +14,37 @@ router.get('/', function () {
   this.body = 'Homepage'
 })
 
+function* getNestedGeneratorsContent () {
+  var body = yield getGeneratorBodyContent()
+  return body
+}
+
+function* getGeneratorBodyContent () {
+  return yield 'Nested Generators'
+}
+
+router.get('/nested-generators', function* () {
+  this.body = yield getNestedGeneratorsContent()
+})
+
+function getNestedPromisesContent () {
+  return Promise.resolve(getPromiseBodyContent())
+}
+
+function getPromiseBodyContent () {
+  return Promise.resolve('Nested Promises')
+}
+
+router.get('/nested-promises', function* () {
+  this.body = yield getNestedPromisesContent()
+})
+
+router.get('/primitive', function* () {
+  var prefix = yield 'Hello'
+  var suffix = yield 'World'
+  this.body = prefix + ' ' + suffix
+})
+
 ;['get', 'head', 'post', 'put', 'delete'].forEach(function (method) {
   router.set('/method-test/' + method, [method], function () {
     this.body = method
@@ -74,8 +105,8 @@ router.get(/^\/hello\/(\w+)/i, function () {
   this.body = 'Hello, ' + this.params[0]
 })
 
-router.on('500', function () {
-  this.body = 'Oops'
+router.on('500', function (next, error) {
+  this.body = error.message + '\nError Stack:' + error.stack
   this.status = 500
 })
 
