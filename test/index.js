@@ -39,15 +39,41 @@ describe('router', function () {
     })
   })
 
-  ;['get', 'head', 'post', 'put', 'delete'].forEach(function (method) {
-    it('should response 200 for method: ' + method, function (done) {
-      request({
-        url: getURL('/method-test/' + method),
-        method: method
-      }, function (error, response) {
-        assert.equal(response.statusCode, 200)
-        done()
+  it('should support using `all` to catch all methods', function (done) {
+    var tests = ['get', 'post', 'put', 'delete'].map(function (method) {
+      return new Promise(function (res) {
+        request({
+          url: getURL('/all'),
+          method: method
+        }, function (error, response, body) {
+          assert.equal(response.statusCode, 200)
+          assert.equal(body, 'works')
+          res()
+        })
       })
+    })
+
+    Promise.all(tests).then(function () {
+      done()
+    })
+  })
+
+  it('should support multiple definitions for same URL pattern', function (done) {
+    var tests = ['get', 'post', 'put', 'delete'].map(function (method) {
+      return new Promise(function (res) {
+        request({
+          url: getURL('/multiple-definitions'),
+          method: method
+        }, function (error, response, body) {
+          assert.equal(response.statusCode, 200)
+          assert.equal(body, method)
+          res()
+        })
+      })
+    })
+
+    Promise.all(tests).then(function () {
+      done()
     })
   })
 

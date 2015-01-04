@@ -14,6 +14,16 @@ router.get('/', function () {
   this.body = 'Homepage'
 })
 
+router.all('/all', function () {
+  this.body = 'works'
+})
+
+;['get', 'post', 'put', 'delete'].forEach(function (method) {
+  router.set('/multiple-definitions', [method], function () {
+    this.body = method
+  })
+})
+
 function* getNestedGeneratorsContent () {
   var body = yield getGeneratorBodyContent()
   return body
@@ -43,12 +53,6 @@ router.get('/primitive', function* () {
   var prefix = yield 'Hello'
   var suffix = yield 'World'
   this.body = prefix + ' ' + suffix
-})
-
-;['get', 'head', 'post', 'put', 'delete'].forEach(function (method) {
-  router.set('/method-test/' + method, [method], function () {
-    this.body = method
-  })
 })
 
 router.get('/global-error-handler', function () {
