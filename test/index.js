@@ -123,6 +123,14 @@ describe('controller', function () {
     })
   })
 
+  it('should support yielding nested generators and promises', function (done) {
+    request.get(getURL('/nested-generators-and-promises'), function (error, response, body) {
+      assert.equal(response.statusCode, 200)
+      assert.equal(body, 'works')
+      done()
+    })
+  })
+
   it('should support yielding primitive data types', function (done) {
     request.get(getURL('/primitive'), function (error, response, body) {
       assert.equal(response.statusCode, 200)

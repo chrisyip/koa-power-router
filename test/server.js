@@ -105,6 +105,22 @@ router.get(/^\/hello\/(\w+)/i, function () {
   this.body = 'Hello, ' + this.params[0]
 })
 
+function get () {
+  return Promise.resolve('works')
+}
+
+function* action () {
+  this.body = yield get()
+}
+
+function* gen () {
+  yield action.call(this)
+}
+
+router.get('/nested-generators-and-promises', function* () {
+  yield gen.call(this)
+})
+
 router.on('500', function (next, error) {
   this.body = error.message + '\nError Stack:' + error.stack
   this.status = 500
