@@ -106,6 +106,12 @@ router.get('/demo', function () {})
 
 `url`: the pattern of URL, convertd to regular expression with [path-to-regexp](https://github.com/pillarjs/path-to-regexp).
 
+`url` supports:
+
+- String: `'/homepage'`
+- Named string: `'/uesr/:id'`
+- Regular expression: `/^/item/(\d)+/i`
+
 `methods`: the HTTP methods that this router should support, can be `string` and `array`.
 
 `action`: `function` or `generator`.
