@@ -39,6 +39,10 @@ router.post('/post', new Controller({
   }
 }))
 
+router.all('/500', function () {
+  this.throw(500)
+})
+
 var user = require('./user.js')
 
 router.get('/user/:name?', user.index)
