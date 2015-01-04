@@ -118,6 +118,7 @@ router.get('/demo', function () {})
 
 #### Shortcuts
 
+- `router.all(url, action)`
 - `router.get(url, action)`
 - `router.post(url, action)`
 - `router.put(url, action)`
