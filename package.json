@@ -1,6 +1,6 @@
 {
   "name": "koa-power-router",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Yet another router middleware for Koa, but better.",
   "main": "index.js",
   "scripts": {
