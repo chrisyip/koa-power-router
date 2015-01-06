@@ -26,7 +26,7 @@ var router = require('koa-power-router/router')
 var Controller = require('koa-power-router/controller')
 
 var options = {
-  strcitSlash: true // or false
+  strictSlash: true // or false
 }
 
 app.use(router(options))
@@ -96,7 +96,7 @@ Supported options:
 
 [http://stackoverflow.com/questions/10161177/url-with-multiple-forward-slashes-does-it-break-anything](http://stackoverflow.com/questions/10161177/url-with-multiple-forward-slashes-does-it-break-anything)
 
-If `strcitSlash` is `true`, URL like `//demo` will not match the following router:
+If `strictSlash` is `true`, URL like `//demo` will not match the following router:
 
 ```js
 router.get('/demo', function () {})
@@ -156,6 +156,17 @@ var user = new Controller({
 })
 ```
 
+## Action
+
+Same as the Koa middleware, nothing different.
+
+```js
+dashboard: function* (next) {
+  yield this.render('dashboard')
+  yield next
+}
+```
+
 ## Methods
 
 ### on(status, handler)
@@ -202,66 +213,27 @@ Any request of `/dashboard` without `token` will go to `on401` handler and rende
 
 # Yieldables
 
-Koa is using [co](https://www.npmjs.com/packages/co), and co's changed the `yield`'s behaviors.
+Power router uses [`yieldr`](https://github.com/chrisyip/yieldr) to yield generatos and promises, you should notice that `yieldr` is slightly different from [`co`](https://github.com/tj/co).
 
-For example:
-
-```js
-// native yield
-function* func (input) {
-  var result = yield Math.floor(input) + 1
-  return result
-}
-
-func('12').next().value // 13
-
-// co
-function* func (input) {
-  var result = yield Math.floor(input) + 1
-  return result
-}
-
-co.wrap(func)() // TypeError: You may only yield a function, promise, generator, array, or object
-```
-
-Because of this change, co extended Koa with some great features:
-
-```js
-app.use(function* () {
-  var results = yield [Promise.resolve('123'), new Promise(function (res) { res('foo' + 'bar') })]
-  // Co will loop through array, and try to resolve it
-  console.log(results) // ['123', 'foobar']
-})
-```
-
-But personally, I don't like to limit yieldables objects. So Power Router will only try to resolve promises and generators:
-
-```js
-function getUser (name) {
-  return new Promise(function (res) {
-    request.get(API_TO_GET_USER, { username: name }, function (error, data) {
-      res(data)
-    })
-  })
-}
-
-router.get('/', function* () {
-  var user = yield getUser(this.query.name) // user will be the data object
-  var genders = yield [Promise.resolve('male'), Promise.resolve('female')]
-  console.log(genders) // [ Promise, Promise ]  
-})
-```
-
-If you want something like resolving array, just use co directly:
+If you really need some features that provided by `co`, use `co` directly:
 
 ```js
 var co = require('co')
 
 router.get('/', function* () {
-  var genders = yield co(function* () {
-    return yield [Promise.resolve('male'), Promise.resolve('female')]
+  var result = yield co(function* () {
+    return yield [Promise.resolve('foo')]
   })
-  console.log(genders) // [ 'male', 'female' ]  
+  console.log(result) // [ 'foo' ]  
+})
+```
+
+Or:
+
+```js
+router.get('/', function* () {
+  var result = [yield Promise.resolve('foo')]
+  console.log(result) // [ 'foo' ]
 })
 ```
 
