@@ -2,8 +2,6 @@
 
 [![Node version][node-image]][npm-url] [![NPM version][npm-image]][npm-url] [![Dependency Status][daviddm-image]][daviddm-url] [![Travis CI][travis-image]][travis-url] [![Coveralls][coveralls-image]][coveralls-url]
 
-**Still under development!**
-
 Features:
 
 - `onSTATUS` handler (globally or per controller)
