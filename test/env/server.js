@@ -2,9 +2,9 @@ var koa = require('koa')
 
 var app = koa()
 
-var router = require('../router.js')
+var router = require('../../router.js')
 
-var Controller = require('../controller.js')
+var Controller = require('../../controller.js')
 
 app.use(router({
   strictSlash: false
@@ -125,13 +125,47 @@ router.get('/nested-generators-and-promises', function* () {
   yield gen.call(this)
 })
 
+var ctrl = new Controller()
+
+ctrl.addAction('addActionTest', function () {
+  this.body = 'works'
+})
+
+router.get('/ctrl/addAction', ctrl.addActionTest)
+
+ctrl.addAction('notFound', function () {
+
+})
+
+ctrl.on('404', function () {
+  this.body = 'works'
+  this.status = 404
+})
+
+ctrl.on('405', function* () {
+  this.body = yield 'works'
+  this.status = 405
+})
+
+router.get('/ctrl/not-found', ctrl.notFound)
+
+ctrl.on('401', function () {
+  throw Error('401 error')
+})
+
+ctrl.addAction('notAuth', function () {
+  this.status = 401
+})
+
+router.get('/ctrl/401', ctrl.notAuth)
+
+router.get('/say/:name', function () {
+  this.body = this.params.name
+})
+
 router.on('500', function (next, error) {
   this.body = error.message + '\nError Stack:' + error.stack
   this.status = 500
 })
 
-module.exports = function () {
-  app.listen(3456, function () {
-    console.info('Koa server started.')
-  })
-}
+app.listen(3456)

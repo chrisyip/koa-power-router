@@ -2,17 +2,15 @@
 
 var assert = require('assert')
 
-var request = require('request')
+var helpers = require('./env/helpers.js')
 
-request.defaults({ proxy: null })
+var request = helpers.request
 
-var server = require('./server.js')
+var getURL = helpers.getURL
 
-function getURL (page) {
-  return 'http://127.0.0.1:3456/' + (page || '')
-}
+var router = require('../lib/router/index.js')
 
-server()
+var Controller = require('../lib/controller/index.js')
 
 describe('router', function () {
   it('should return 404 if page not found', function (done) {
@@ -93,6 +91,14 @@ describe('router', function () {
     })
   })
 
+  it('should support named pattern', function (done) {
+    request.get(getURL('/say/John'), function (error, response, body) {
+      assert.equal(body, 'John')
+      assert.equal(response.statusCode, 200)
+      done()
+    })
+  })
+
   it('should support regexp for URL pattern', function (done) {
     Promise.all([
       new Promise(function (resolve) {
@@ -114,87 +120,28 @@ describe('router', function () {
       done()
     })
   })
-})
 
-describe('controller', function () {
-  it('should support normal function', function (done) {
-    request.get(getURL('/controller/normal-func'), function (error, response, body) {
-      assert.equal(body, 'done')
-      assert.equal(response.statusCode, 200)
-      done()
-    })
+  it('should throw exception when add a controller without defaultAction', function () {
+    try {
+      router.get('/', new Controller())
+    } catch (ex) {
+      assert.equal(ex.message, 'Controller defaultAction is undefined!')
+    }
   })
 
-  it('should support generator', function (done) {
-    request.get(getURL('/controller/generator'), function (error, response, body) {
-      assert.equal(body, 'done')
-      assert.equal(response.statusCode, 200)
-      done()
-    })
+  it('should throw exception when add an unsupported type for controller', function () {
+    try {
+      router.get('/', true)
+    } catch (ex) {
+      assert.equal(ex.message, 'Router action must be a controller, function or generator')
+    }
   })
 
-  it('should support yielding nested generators', function (done) {
-    request.get(getURL('/nested-generators'), function (error, response, body) {
-      assert.equal(response.statusCode, 200)
-      assert.equal(body, 'Nested Generators')
-      done()
-    })
-  })
-
-  it('should support yielding nested promises', function (done) {
-    request.get(getURL('/nested-promises'), function (error, response, body) {
-      assert.equal(response.statusCode, 200)
-      assert.equal(body, 'Nested Promises')
-      done()
-    })
-  })
-
-  it('should support yielding nested generators and promises', function (done) {
-    request.get(getURL('/nested-generators-and-promises'), function (error, response, body) {
-      assert.equal(response.statusCode, 200)
-      assert.equal(body, 'works')
-      done()
-    })
-  })
-
-  it('should support yielding primitive data types', function (done) {
-    request.get(getURL('/primitive'), function (error, response, body) {
-      assert.equal(response.statusCode, 200)
-      assert.equal(body, 'Hello World')
-      done()
-    })
-  })
-
-  it('should emit onSTATUS', function (done) {
-    request.get(getURL('/controller/on'), function (error, response, body) {
-      assert.equal(body, 'Nothing here')
-      assert.equal(response.statusCode, 404)
-      done()
-    })
-  })
-})
-
-describe('controller beforeAction', function () {
-  it('should support function and generator', function (done) {
-    request.get(getURL('/ba/ok'), function (error, response, body) {
-      assert.equal(response.statusCode, 200)
-      assert.equal(body, 'Hello')
-      done()
-    })
-  })
-
-  it('should skip controller and go to 404 if returns any values except undefined and null', function (done) {
-    request.get(getURL('/ba/not-ok'), function (error, response) {
-      assert.equal(response.statusCode, 404)
-      done()
-    })
-  })
-
-  it('should go to controller if returns undefined or null', function (done) {
-    request.get(getURL('/ba/ok'), function (error, response, body) {
-      assert.equal(response.statusCode, 200)
-      assert.equal(body, 'Hello')
-      done()
-    })
+  it('should throw exception when use non-string or non-regexp for pattern', function () {
+    try {
+      router.get(true, function () {})
+    } catch (ex) {
+      assert.equal(ex.message, 'Router URL pattern must be a string or regular expression!')
+    }
   })
 })

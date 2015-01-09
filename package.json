@@ -4,8 +4,10 @@
   "description": "Yet another router middleware for Koa, but better.",
   "main": "index.js",
   "scripts": {
-    "test": "gulp lint && node --harmony node_modules/mocha/bin/_mocha --reporter nyan --bail --check-leaks test/index.js",
-    "test-travis": "gulp lint && node --harmony node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/index.js"
+    "mocha": "node --harmony node_modules/mocha/bin/_mocha -r test/env/server.js --reporter nyan --bail --check-leaks test/*.js",
+    "mocha:cov": "node --harmony node_modules/istanbul/lib/cli.js cover node_modules/mocha/bin/_mocha -- -r test/env/server.js --reporter spec --check-leaks test/*.js",
+    "test": "gulp lint && npm run mocha",
+    "test-travis": "gulp lint && npm run mocha:cov"
   },
   "author": "Chris Yip <i@chrisyip.im>",
   "license": "MIT",

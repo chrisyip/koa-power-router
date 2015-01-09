@@ -3,7 +3,13 @@ var gulp = require('gulp'),
     stylish = require('jshint-stylish')
 
 gulp.task('lint', function () {
-  return gulp.src(['**/*.js', '!node_modules{,/**}'])
+  return gulp.src([
+            'controller.js',
+            'index.js',
+            'router.js',
+            'test/**/*.js',
+            'example/**/*.js'
+          ])
           .pipe(jshint())
           .pipe(jshint.reporter(stylish))
           .pipe(jshint.reporter('fail'))
