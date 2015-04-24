@@ -8,6 +8,7 @@ gulp.task('lint', function () {
             'index.js',
             'router.js',
             'test/**/*.js',
+            'lib/**/*.js',
             'example/**/*.js'
           ])
           .pipe(jshint())
